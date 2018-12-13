@@ -21,12 +21,38 @@ app.use(express.urlencoded({ extended: true })); // what does it mean?
 // check id error for '/items/:id' it is not error handler
 app.use('/items/:id', function(req, res, next) {
   let id = parseInt(req.params.id);
-  console.log(id, shopList.length);
+  //   console.log(id, shopList.length);
+  console.log(req);
   if (id > shopList.length) {
     let err = new Error('it is not created yet');
     err.status = 404;
-    console.log(err);
+    // console.log(err);
     return next(err); // will add later
+  } else if (['post', 'patch'].includes(req.method)) {
+    let body = req.body;
+    if (!(body.keys().includes('name') && body.keys().includes('price'))) {
+      let err = new Error('not valid input');
+      err.status = 418;
+      return next(err);
+    }
+  } else {
+    return next();
+  }
+});
+// if the method is post or patch, we are going to check the req.body
+app.use('/items/', function(req, res, next) {
+  let id = parseInt(req.params.id);
+  //   console.log(id, shopList.length);
+  //console.log(req);
+  if (['POST', 'PATCH'].includes(req.method)) {
+    let body = req.body;
+    let groceries = Object.keys(body);
+
+    if (!(groceries.includes('name') && groceries.includes('price'))) {
+      let err = new Error('not valid input');
+      err.status = 418;
+      return next(err);
+    }
   } else {
     return next();
   }
@@ -41,7 +67,7 @@ app.get('/items', function(req, res, next) {
 app.post('/items/', function(req, res, next) {
   // the body is json, double quotes
   let newItem = req.body;
-  console.log(newItem);
+  //   console.log(newItem);
   shopList.push(newItem);
   return res.send(shopList);
 });
